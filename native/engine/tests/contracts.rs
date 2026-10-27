@@ -50,6 +50,26 @@ fn durable_admission_is_idempotent_across_restarts_and_session_scoped() {
 }
 
 #[test]
+fn a_second_engine_cannot_reset_the_running_owners_claims() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("sessions.sqlite");
+    let engine = Engine::open(&path).unwrap();
+    let session = engine
+        .store
+        .create_session(directory.path(), "Owner")
+        .unwrap();
+    engine.store.claim(&session.id).unwrap();
+    assert!(Engine::open(&path).is_err());
+    assert_eq!(engine.store.session(&session.id).unwrap().status, "running");
+    drop(engine);
+    let recovered = Engine::open(&path).unwrap();
+    assert_eq!(
+        recovered.store.session(&session.id).unwrap().status,
+        "interrupted"
+    );
+}
+
+#[test]
 fn approval_is_bound_to_operation_session_and_one_execution() {
     let directory = tempfile::tempdir().unwrap();
     let store = Store::open(&directory.path().join("sessions.sqlite")).unwrap();

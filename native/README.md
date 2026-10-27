@@ -30,6 +30,7 @@ Run the development HTTP service with `cargo run -p cryzo-engine -- serve <data-
 - Separate Tauri 2 executable with a SolidJS native inspector.
 - OS credential storage, not browser storage or SQLite secrets.
 - SQLite WAL sessions, idempotent prompt admission, ordered resumable event pages, and explicit interrupted-session status after restart.
+- An OS file lock keeps a second local engine from resetting an active owner's recovery state.
 - Authenticated loopback-only development HTTP service and direct Tauri IPC.
 - Workspace-relative file reads, listings and writes, Git diffs, and bounded-duration program execution.
 - Single-use approval bound to the exact session and operation for writes and commands.

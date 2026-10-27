@@ -21,6 +21,7 @@ use tokio::sync::{Mutex, mpsc};
 use tokio_util::sync::CancellationToken;
 
 pub struct Engine {
+    _ownership: std::fs::File,
     pub store: Store,
     pub catalog: Catalog,
     running: Mutex<HashMap<String, CancellationToken>>,
@@ -28,7 +29,18 @@ pub struct Engine {
 
 impl Engine {
     pub fn open(path: &std::path::Path) -> Result<Self> {
+        // Recovery may reset running claims only after the previous process has released ownership.
+        let ownership = std::fs::File::options()
+            .create(true)
+            .truncate(false)
+            .read(true)
+            .write(true)
+            .open(path.with_extension("lock"))?;
+        ownership
+            .try_lock()
+            .map_err(|error| anyhow::anyhow!("cannot acquire local engine ownership: {error}"))?;
         Ok(Self {
+            _ownership: ownership,
             store: Store::open(path)?,
             catalog: Catalog::load()?,
             running: Mutex::new(HashMap::new()),
