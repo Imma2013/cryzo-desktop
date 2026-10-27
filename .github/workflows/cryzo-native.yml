@@ -37,10 +37,10 @@ jobs:
         run: cargo fmt --all --check
       - name: Engine lint
         working-directory: native
-        run: cargo clippy -p cryzo-engine --all-targets -- -D warnings
+        run: cargo clippy --locked -p cryzo-engine --all-targets -- -D warnings
       - name: Engine contracts
         working-directory: native
-        run: cargo test -p cryzo-engine
+        run: cargo test --locked -p cryzo-engine
 
   desktop:
     strategy:
@@ -75,4 +75,4 @@ jobs:
         run: bun run build:ui
       - name: Native host compilation (no public release)
         working-directory: native
-        run: cargo check -p cryzo-desktop --target ${{ matrix.target }}
+        run: cargo check --locked -p cryzo-desktop --target ${{ matrix.target }}
